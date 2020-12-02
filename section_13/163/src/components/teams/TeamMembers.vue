@@ -9,6 +9,7 @@
         :role="member.role"
       ></user-item>
     </ul>
+    <router-link to="/teams/t2">Go to Team 2</router-link>
   </section>
 </template>
 
@@ -16,18 +17,60 @@
 import UserItem from '../users/UserItem.vue';
 
 export default {
+  inject: ['users', 'teams'],
+  props: ['teamID'],
   components: {
     UserItem
   },
   data() {
     return {
-      teamName: 'Test',
-      members: [
-        { id: 'u1', fullName: 'Max Schwarz', role: 'Engineer' },
-        { id: 'u2', fullName: 'Max Schwarz', role: 'Engineer' },
-      ],
+      teamName: '',
+      members: []
     };
   },
+  methods: {
+    loadTeamMembers(teamID) {
+      // this.$route.path // /teams/teamid
+      // gets the team id from the url path
+      // const teamID = route.params.teamID;
+
+      // finds team object from teams array in app.vue
+      const selectedTeam = this.teams.find(team => team.id === teamID);
+
+      // gets members id field from team
+      const members = selectedTeam.members;
+
+      // used to hold member info of selected team
+      const selectedMembers = [];
+
+      // looping through member IDs from selected team found in path URL
+      for (const member of members) {
+        // Find selected member object through use of member id
+        const selectedUser = this.users.find(user => user.id === member);
+
+        // Pushes selected member object into array
+        selectedMembers.push(selectedUser);
+      }
+
+      // copy selected member array for use in vue
+      this.members = selectedMembers;
+      // copy selected team name for use in vue
+      this.teamName = selectedTeam.name;
+    }
+  },
+  created() {
+    this.loadTeamMembers(this.teamID);
+  },
+  beforeRouteUpdate(to, from, next) {
+    console.log("TeamMembers Cmp beforeRouteUpdate");
+    console.log(to, from);
+    next();
+  },
+  watch: {
+    teamID(newID) {
+      this.loadTeamMembers(newID);
+    }
+  }
 };
 </script>
 
